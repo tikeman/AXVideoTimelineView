@@ -1,5 +1,6 @@
 package com.aghajari.axvideotimelineview;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -12,10 +13,13 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.core.content.res.ResourcesCompat;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -98,8 +102,8 @@ public class AXVideoTimelineView extends View{
         utils = new AXFrameDecoderUtils();
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint2 = new Paint();
-        drawableLeft = getContext().getResources().getDrawable(R.drawable.video_cropleft);
-        drawableRight = getContext().getResources().getDrawable(R.drawable.video_cropright);
+        drawableLeft = ResourcesCompat.getDrawable(getContext().getResources(), R.drawable.video_cropleft, null);
+        drawableRight = ResourcesCompat.getDrawable(getContext().getResources(), R.drawable.video_cropright, null);
 
 
         int color=Color.WHITE;
@@ -230,10 +234,10 @@ public class AXVideoTimelineView extends View{
     public boolean isLeftDragging() { return pressedLeft; }
     public boolean isRightDragging() { return pressedRight; }
     public boolean isDragging(){
-        if (pressedPlay||pressedLeft||pressedRight) return true;
-        return false;
+        return pressedPlay || pressedLeft || pressedRight;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event == null) {
@@ -351,7 +355,24 @@ public class AXVideoTimelineView extends View{
         return false;
     }
 
+    public void setVideoUri(Context context, Uri uri) {
+        destroy();
 
+        progressLeft = 0.0f;
+        progressRight = 1.0f;
+
+        mediaMetadataRetriever = new MediaMetadataRetriever();
+        mediaMetadataRetriever.setDataSource(context, uri);
+        String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        videoLength = Long.parseLong(duration == null ? "0" : duration);
+
+        invalidate();
+    }
+
+    /**
+     * For internal files only
+     * @param file The file to load
+     */
     public void setVideoPath(File file) {
         destroy();
         mediaMetadataRetriever = new MediaMetadataRetriever();
@@ -361,13 +382,17 @@ public class AXVideoTimelineView extends View{
             FileInputStream inputStream = new FileInputStream(file.getAbsolutePath());
             mediaMetadataRetriever.setDataSource(inputStream.getFD());
             String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            videoLength = Long.parseLong(duration);
+            videoLength = Long.parseLong(duration == null ? "0" : duration);
         } catch (Exception e) {
             e.printStackTrace();
         }
         invalidate();
     }
 
+    /**
+     * For internal files only
+     * @param path Path of the file
+     */
     public void setVideoPath(String path) {
         setVideoPath(new File(path));
     }

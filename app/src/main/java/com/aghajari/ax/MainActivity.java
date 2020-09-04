@@ -7,9 +7,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -75,13 +76,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                } else {
+                                           @NonNull String[] permissions, int[] grantResults) {
+                if (grantResults.length <= 0
+                        || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     this.finish();
                 }
-                return;
     }
 
     @Override
@@ -89,26 +88,10 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
                 Uri selectedVideoUri = data.getData();
-                // MEDIA GALLERY
-                String selectedVideoPath = getPath(selectedVideoUri);
-                Toast.makeText(this,selectedVideoPath,Toast.LENGTH_SHORT).show();
-                if (selectedVideoPath != null) {
-                    axView.setVisibility(View.VISIBLE);
-                    axView.setVideoPath(selectedVideoPath);
-                    duration.setText("Duration : "+axView.getVideoDuration());
-                }
-        }
-    }
 
-    public String getPath(Uri uri) {
-        String[] projection = { MediaStore.Video.Media.DATA };
-        getContentResolver();
-        Cursor cursor = getApplicationContext().getContentResolver().query(uri, projection, null, null, null);
-        if (cursor != null) {
-            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA);
-            cursor.moveToFirst();
-            return cursor.getString(column_index);
-        } else
-            return null;
+                axView.setVisibility(View.VISIBLE);
+                axView.setVideoUri(this, selectedVideoUri);
+                duration.setText("Duration : " + axView.getVideoDuration());
+        }
     }
 }

@@ -1,3 +1,5 @@
+Note: Project has been migrated to AndroidX.
+
 # AXVideoTimelineView
 <img src="https://github.com/Aghajari/AXVideoTimelineView/blob/master/AXVideoTimelineView.png" width=512 title="Screen">
 
